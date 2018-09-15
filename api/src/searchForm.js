@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { withStyles } from '@material-ui/core/styles';
+import hash from 'object-hash';
 
 import Typography from '@material-ui/core/Typography';
 import Input from '@material-ui/core/Input';
@@ -7,6 +8,7 @@ import Grid from '@material-ui/core/Grid';
 
 import Paper from '@material-ui/core/Paper';
 import Divider from '@material-ui/core/Divider';
+import Hidden from '@material-ui/core/Hidden';
 
 import Button from '@material-ui/core/Button';
 import Icon from '@material-ui/core/Icon';
@@ -31,6 +33,9 @@ import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 
 import TextField from '@material-ui/core/TextField';
+
+import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
+
 
 const styles = theme  => ({
     root: {
@@ -281,8 +286,11 @@ class SearchForm extends React.Component {
         results: 10,
         pages: 1,
         workers: 1,
-        debug: 'info'
+        debug: 'info',
+        response: ''
     }
+
+    fileDownload = null;
 
     constructor(props) {
         super(props);
@@ -297,6 +305,52 @@ class SearchForm extends React.Component {
 
         // console.log(event.target);
         console.log(this.state);
+        this.setState({response: ''});
+
+        var s = '';
+        function encode(s){ return encodeURIComponent(s).replace(/%20/g,'+'); }
+        for (var key in this.state) {
+            if (this.state.hasOwnProperty(key) && key !== 'response' && key !== 'fileDownload' && key !== 'filename') {
+                // console.log(key, this.state[key]);
+                s += (s?'&':'') + encode(key) + '=' + encode(this.state[key]);
+            }
+        }
+        this.setState({filename: hash.MD5(this.state) + '.json'});
+        s += (s?'&':'') + encode('filename') + '=' + encode(hash.MD5(this.state) + '.json');
+
+        console.log(s);
+
+        const that = this;
+        fetch('/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+                // 'Content-Type': 'multipart/form-data'
+            },
+            body: s
+        }).then((res) => {
+            // console.log(res.body.getReader());
+            const reader = res.body.getReader();
+            const chunk = new TextDecoder('utf-8');
+
+            reader.read().then( function process({ done, value }) {
+                if (value) {
+                    value = chunk.decode(value);
+                    console.log(value);
+                    that.setState({response: that.state.response + value});
+                }
+
+                if (done) {
+                    console.log("stream complete");
+                    that.setState({response: that.state.response + "\nstream complete\n", fileDownload: that.state.filename});
+
+                    return;
+                }
+
+                return reader.read().then(process);
+            });
+
+        });
     }
 
     handleChange(event) {
@@ -375,6 +429,17 @@ class SearchForm extends React.Component {
                         </Grid>
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
+                <Paper className={classes.paperRoot}>
+                    <pre>{this.state.response}</pre>
+                </Paper>
+                <div>
+                    {this.state.fileDownload && (
+                        <Button variant="contained" size="large" color="primary" href={"/download/" + this.state.fileDownload}>
+                            Download
+                            <CloudDownloadIcon className={classes.rightIcon}/>
+                        </Button>
+                    )}
+                </div>
             </form>
         );
     }

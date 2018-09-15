@@ -2,6 +2,7 @@
 
 const path = require('path');
 const webpack = require('webpack');
+const express = require('express');
 
 const Server = require('webpack-dev-server/lib/Server');
 const addEntries = require('webpack-dev-server/lib/utils/addEntries');
@@ -44,4 +45,78 @@ server.listen(options.port, options.host, (err) => {
     if (err) {
         throw err;
     }
+});
+
+// const chokidar = require('chokidar');
+
+const { spawn } = require('child_process');
+var bodyParser = require('body-parser');
+
+// server.app.use(bodyParser.json()); // for parsing application/json
+server.app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+
+express.static.mime.define({'application/json': ['json']});
+server.app.use('/files', express.static(path.join(__dirname, 'files')));
+
+server.app.post('/search', (req, res) => {
+
+    const request = req.body;
+
+    // console.log(request);
+
+    const command = '/home/jbelich/env/bin/GoogleScraper'
+    const params = [
+        '-m', request.method || 'http',
+        '-s', request.engines || 'google',
+        '--keyword', request.search,
+        '-v', request.debug || 'info',
+        '-p', request.pages || '1',
+        '-z', request.workers || '1',
+        '-n', request.results || '10',
+        '-o', path.join(__dirname, 'files', request.filename || 'result.json'),
+        // '--simulate'
+    ];
+    const ls = spawn(command, params);
+
+    let line = command + ' ' + params.join(' ');
+    res.write(line + "\n");
+    console.log('stderr: ' + line);
+
+    // ls.stdout.pipe(res);
+    // ls.stdout.on('data', (data) => {
+    //   console.log(`stdout: ${data}`);
+    // });
+
+    ls.stderr.pipe(res);
+    ls.stderr.on('data', (data) => {
+        console.log(`stderr: ${data}`);
+    });
+
+    ls.on('close', (code) => {
+        console.log(`child process exited with code ${code}`);
+        res.end();
+    });
+    // res.end();
+});
+
+server.app.get('/download/:file', (req, res) => {
+    res.download(path.join(__dirname, 'files', req.params.file));
+});
+
+server.app.post('/test', (req, res) => {
+    const ls = spawn('ls', ['-lh', '/usr']);
+
+    ls.stdout.pipe(res);
+    ls.stdout.on('data', (data) => {
+      console.log(`stdout: ${data}`);
+    });
+
+    ls.stderr.on('data', (data) => {
+        console.log(`stderr: ${data}`);
+    });
+
+    ls.on('close', (code) => {
+        console.log(`child process exited with code ${code}`);
+        res.end();
+    });
 });
