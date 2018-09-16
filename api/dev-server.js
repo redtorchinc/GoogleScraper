@@ -49,7 +49,7 @@ server.listen(options.port, options.host, (err) => {
 
 // const chokidar = require('chokidar');
 
-const { spawn } = require('child_process');
+const { spawn, exec } = require('child_process');
 var bodyParser = require('body-parser');
 
 // server.app.use(bodyParser.json()); // for parsing application/json
@@ -76,7 +76,13 @@ server.app.post('/search', (req, res) => {
         '-o', path.join(__dirname, 'files', request.filename || 'result.json'),
         // '--simulate'
     ];
-    const ls = spawn(command, params);
+    const cwd = path.join('/tmp', request.filename || 'result.json');
+    // console.log(cwd);
+
+    exec('mkdir ' + cwd);
+    const ls = spawn(command, params, {
+        cwd: cwd
+    });
 
     let line = command + ' ' + params.join(' ');
     res.write(line + "\n");
@@ -95,28 +101,11 @@ server.app.post('/search', (req, res) => {
     ls.on('close', (code) => {
         console.log(`child process exited with code ${code}`);
         res.end();
+        exec('rm -rf ' + cwd);
     });
     // res.end();
 });
 
 server.app.get('/download/:file', (req, res) => {
     res.download(path.join(__dirname, 'files', req.params.file));
-});
-
-server.app.post('/test', (req, res) => {
-    const ls = spawn('ls', ['-lh', '/usr']);
-
-    ls.stdout.pipe(res);
-    ls.stdout.on('data', (data) => {
-      console.log(`stdout: ${data}`);
-    });
-
-    ls.stderr.on('data', (data) => {
-        console.log(`stderr: ${data}`);
-    });
-
-    ls.on('close', (code) => {
-        console.log(`child process exited with code ${code}`);
-        res.end();
-    });
 });

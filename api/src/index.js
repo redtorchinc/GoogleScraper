@@ -2,7 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { AppContainer } from 'react-hot-loader';
 
-import App from "./app.js";
+import 'typeface-roboto';
+
+import Shell from "./shell.js";
 
 const render = (Component) => {
     return ReactDOM.render(
@@ -11,10 +13,10 @@ const render = (Component) => {
         </AppContainer>, document.getElementById('root'))
 };
 
-render(App); 
+render(Shell);
 
 if (module.hot) {
-    module.hot.accept("./app.js", function () {
-        render(App);
+    module.hot.accept("./shell.js", function () {
+        render(Shell);
     })
 }

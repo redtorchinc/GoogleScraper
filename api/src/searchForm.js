@@ -42,17 +42,10 @@ const styles = theme  => ({
         width: '100%'
     },
     paperRoot: {
-        marginTop: theme.spacing.unit * 8,
         display: 'flex',
         alignItems: 'center',
         flexGrow: 1,
         padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit * 3}px`,
-    },
-    search: {
-    },
-    searchInputRoot: {
-    },
-    searchInputInput: {
     },
     rightIcon: {
         marginLeft: theme.spacing.unit,
@@ -178,6 +171,7 @@ class SearchNumWorkersField extends React.Component {
 }
 
 class SearchTypeField extends React.Component {
+
     render() {
         const { classes, theme, children } = this.props;
 
@@ -216,14 +210,14 @@ class SearchDebugLevelField extends React.Component {
 
         return (
             <FormControl fullWidth className={classes.formControl}>
-                <FormLabel>Search Type</FormLabel>
+                <FormLabel>Debug Level</FormLabel>
                 <RadioGroup
                     style={{ float: 'left', flexDirection: 'row' }}
                     name="debug_level"
                     onChange={this.props.onChangeCb}
                     value={this.props.value}
                 >
-                    <FormControlLabel value="none" control={<Radio />} label="None" />
+                    {/* <FormControlLabel value="none" control={<Radio />} label="None" /> */}
                     <FormControlLabel value="debug" control={<Radio />} label="Debug" />
                     <FormControlLabel value="info" control={<Radio />} label="Info" />
                     <FormControlLabel value="warn" control={<Radio />} label="Warning" />
@@ -242,7 +236,7 @@ class SearchEnginesField extends React.Component {
 
         return (
             <FormControl fullWidth className={classes.formControl}>
-                <InputLabel htmlFor="select-multiple-chip">Search Engines</InputLabel>
+                <FormLabel >Search Engines</FormLabel>
                 <Select multiple
                     name="engines"
                     onChange={this.props.onChangeCb}
@@ -290,8 +284,6 @@ class SearchForm extends React.Component {
         response: ''
     }
 
-    fileDownload = null;
-
     constructor(props) {
         super(props);
 
@@ -299,13 +291,12 @@ class SearchForm extends React.Component {
         this.handler = this.handler.bind(this);
     }
 
-
     handleSubmit(event) {
         event.preventDefault();
 
         // console.log(event.target);
         console.log(this.state);
-        this.setState({response: ''});
+        this.setState({response: '', fileDownload: null});
 
         var s = '';
         function encode(s){ return encodeURIComponent(s).replace(/%20/g,'+'); }
@@ -370,27 +361,28 @@ class SearchForm extends React.Component {
 
         return (
             <form onSubmit={this.handleSubmit} className={classes.root}>
-                <Paper className={classes.paperRoot} >
+                <Paper className={classes.paperRoot} style={{marginTop: theme.spacing.unit * 8}}>
                     <Input
                         placeholder="Search..."
                         name="search"
                         onChange={ ev => { this.handler('search', ev)}}
-                        classes={{
-                            root: classes.searchInputRoot,
-                            input: classes.searcnInputInput
-                        }}
                         fullWidth
                     />
                     <Button variant="contained" color="primary" className={classes.searchButton} type="submit">
                         <SendIcon className={classes.rightIcon} />
                     </Button>
+                    {this.state.fileDownload && (
+                        <Button variant="contained" color="primary" href={"/download/" + this.state.fileDownload}>
+                            <CloudDownloadIcon className={classes.rightIcon}/>
+                        </Button>
+                    )}
                 </Paper>
                 <ExpansionPanel defaultExpanded>
                     <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography>Options</Typography>
+                        <Typography variant="title">Options</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
-                        <Grid container
+                        <Grid container spacing={theme.spacing.unit}
                             direction="column"
                             justify="flex-start"
                             alignItems="stretch"
@@ -402,7 +394,7 @@ class SearchForm extends React.Component {
                                 <SearchMethodField {... this.props} value={this.state.method} onChangeCb={ ev => { this.handler('method', ev)}}/>
                             </Grid>
                             <Grid item>
-                                <Grid container
+                                <Grid container spacing={theme.spacing.unit}
                                     direction="row"
                                     justify="center"
                                     alignItems="flex-start"
@@ -429,17 +421,11 @@ class SearchForm extends React.Component {
                         </Grid>
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
-                <Paper className={classes.paperRoot}>
-                    <pre>{this.state.response}</pre>
-                </Paper>
-                <div>
-                    {this.state.fileDownload && (
-                        <Button variant="contained" size="large" color="primary" href={"/download/" + this.state.fileDownload}>
-                            Download
-                            <CloudDownloadIcon className={classes.rightIcon}/>
-                        </Button>
-                    )}
-                </div>
+                {this.state.response && (
+                    <Paper className={classes.paperRoot}>
+                        <pre style={{whiteSpace: 'pre-wrap', wordBreak: 'break-word'}}>{this.state.response}</pre>
+                    </Paper>
+                )}
             </form>
         );
     }

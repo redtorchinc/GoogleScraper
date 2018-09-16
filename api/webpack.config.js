@@ -17,6 +17,14 @@ module.exports = {
                     presets: ["@babel/preset-env", "@babel/preset-react"]
                 }
             }
+        }, {
+            test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+            use: {
+                loader: 'file-loader',
+                options: {
+                    name: '[name].[ext]',
+                }
+            }
         }]
     },
     resolve: {
