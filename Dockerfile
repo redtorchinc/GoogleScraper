@@ -7,33 +7,37 @@ RUN apt-get update
 RUN apt-get -yq install virtualenv python-pip git nodejs npm dumb-init
 RUN virtualenv --python python3 /usr/local/GoogleScraper
 
-ENV BUILD master
-
+COPY . /tmp/GoogleScraper
 RUN bash -c ' \
     cd /usr/local/GoogleScraper && \
     source /usr/local/GoogleScraper/bin/activate && \
-    cd /tmp && git clone https://github.com/redtorchinc/GoogleScraper/ && \
     pip install /tmp/GoogleScraper && \
     mkdir /app && cp -r /tmp/GoogleScraper/api / \
 '
+
+# RUN bash -c ' \
+#    cd /usr/local/GoogleScraper && \
+#    source /usr/local/GoogleScraper/bin/activate && \
+#    cd /tmp && git clone https://github.com/redtorchinc/GoogleScraper/ && \
+#    pip install /tmp/GoogleScraper && \
+#    mkdir /app && cp -r /tmp/GoogleScraper/api / \
+# '
 
 # RUN ls -l / /api
 
 WORKDIR /api
 
-RUN npm install || \
+RUN rm -rf node_modules/ && npm install || \
     ((if [ -f npm-debug.log ]; then \
         cat npm-debug.log; \
     fi) && false)
+RUN npm run build
 
-EXPOSE 3000
+EXPOSE 80
 ENV SCRAPER_ROOT /usr/local/GoogleScraper
-ENV BIND_PORT 3000
+ENV BIND_PORT 80
 ENV BIND_HOST 0.0.0.0
 
-
-CMD ["npm", "run", "build"]
-
 ENTRYPOINT [ "dumb-init" , "--"]
-CMD ["npm", "run", "start:dev"]
-# CMD ["npm", "run", "start"]
+# CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start"]

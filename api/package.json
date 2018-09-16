@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --mode production",
-    "start:dev": "node dev-server.js"
+    "dev": "node dev-server.js",
+    "start": "node server.js"
   },
-  "author": "",
+  "author": "Jason Belich <jason@belich.com>",
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.0.1",
