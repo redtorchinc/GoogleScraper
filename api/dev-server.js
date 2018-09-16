@@ -65,7 +65,7 @@ server.app.post('/search', (req, res) => {
 
     // console.log(request);
 
-    const command = '/home/jbelich/env/bin/GoogleScraper'
+    const command = path.join(process.env.SCRAPER_ROOT || '/home/jbelich/env', '/bin/GoogleScraper');
     const params = [
         '-m', request.method || 'http',
         '-s', request.engines || 'google',

@@ -7,9 +7,7 @@ RUN apt-get update
 RUN apt-get -yq install virtualenv python-pip git nodejs npm dumb-init
 RUN virtualenv --python python3 /usr/local/GoogleScraper
 
-ENV BUILD master-1
-ENV BIND_PORT 3000
-ENV BIND_HOST 0.0.0.0
+ENV BUILD master
 
 RUN bash -c ' \
     cd /usr/local/GoogleScraper && \
@@ -30,6 +28,9 @@ RUN npm install || \
 
 EXPOSE 3000
 ENV SCRAPER_ROOT /usr/local/GoogleScraper
+ENV BIND_PORT 3000
+ENV BIND_HOST 0.0.0.0
+
 
 CMD ["npm", "run", "build"]
 
