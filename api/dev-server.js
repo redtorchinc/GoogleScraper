@@ -29,8 +29,8 @@ const options = Object.assign({}, {
     contentBase: path.join(__dirname, 'dist'),
     hot: true,
     compress: true,
-    port: 3000,
-    host: 'localhost',
+    port: process.env.BIND_PORT || 3000,
+    host: process.env.BIND_HOST || '0.0.0.0',
     watchOptions: { poll: true },
     clientLogLevel: 'info'
 }, config.devServer);
@@ -45,6 +45,7 @@ server.listen(options.port, options.host, (err) => {
     if (err) {
         throw err;
     }
+    console.log(`DEV listening on ${options.host}:${options.port}`);
 });
 
 // const chokidar = require('chokidar');
