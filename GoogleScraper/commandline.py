@@ -131,6 +131,9 @@ NOTSET = 0
                              'yandex". If you want to use all search engines that are available, give \'*\' as '
                              'argument.')
 
+    parser.add_argument('--no-use-own-ip', dest='use_own_ip', required=False, action='store_false',
+                        help='Do not Allow this machine IP to be used')
+
     if only_print_help:
         parser.print_help()
     else:

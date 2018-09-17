@@ -191,16 +191,40 @@ class HttpScrape(SearchEngineScrape, threading.Timer):
     def switch_proxy(self, proxy):
         super().switch_proxy()
 
+    def format_proxy(self, proxy):
+        if proxy:
+            creds = ''
+            if proxy.username or proxy.password:
+                creds = '{user}:{passwd}@'.format(
+                    user=proxy.username,
+                    passwd=proxy.password,
+                )
+
+            proxy_url = '{proto}://{creds}{host}:{port}'.format(
+                proto=proxy.proto,
+                host=proxy.host,
+                port=proxy.port,
+                creds=creds if creds else '',
+            )
+
+            return proxy_url
+
     def proxy_check(self, proxy):
         assert self.proxy and self.requests, 'ScraperWorker needs valid proxy instance and requests library to make ' \
                                              'the proxy check.'
 
         online = False
-        status = 'Proxy check failed: {host}:{port} is not used while requesting'.format(**self.proxy.__dict__)
+        status = 'Proxy check failed: {host}:{port} is not used while requesting'.format(host=proxy.host, port=proxy.port)
         ipinfo = {}
+        proxy_url = self.format_proxy(proxy)
 
         try:
-            text = self.requests.get(self.config.get('proxy_info_url')).text
+            text = self.requests.get(self.config.get('proxy_info_url'),
+                                    proxies=None if self.proxy is None else {
+                                         'http': proxy_url,
+                                         'https': proxy_url
+                                    },
+                                    headers=self.headers).text
             try:
                 ipinfo = json.loads(text)
             except ValueError:
@@ -264,7 +288,13 @@ class HttpScrape(SearchEngineScrape, threading.Timer):
             super().detection_prevention_sleep()
             super().keyword_info()
 
+            proxy_url = self.format_proxy(self.proxy)
+
             request = self.requests.get(self.base_search_url + urlencode(self.search_params),
+                                        proxies=None if self.proxy is None else {
+                                            'http': proxy_url,
+                                            'https': proxy_url
+                                        },
                                         headers=self.headers, timeout=timeout)
 
             self.requested_at = datetime.datetime.utcnow()
