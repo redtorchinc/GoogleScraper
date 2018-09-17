@@ -53,7 +53,12 @@ const styles = theme  => ({
     formControl: {
         flexGrow: 1,
         width: '100%'
-    }
+    },
+    textField: {
+        marginLeft: theme.spacing.unit,
+        marginRight: theme.spacing.unit,
+        width: '100%',
+    },
 });
 
 const engines = [
@@ -194,14 +199,28 @@ class SearchTypeField extends React.Component {
     }
 }
 
-// class SearchProxyListField extends React.Component {
-//     render() {
-//         return (
-//
-//         );
-//     }
-// }
-//
+class SearchProxyListField extends React.Component {
+    render() {
+        const { classes, theme, children } = this.props;
+
+        return (
+            <FormControl fullWidth className={classes.formControl}>
+                <FormLabel>Proxy List</FormLabel>
+                <TextField
+                    id="textarea"
+                    label="format: (https?|socks5) {hostname}:{port} {username}:{password}"
+                    placeholder="Proxy List"
+                    multiline
+                    className={classes.textField}
+                    margin="normal"
+                    onChange={this.props.onChangeCb}
+                    value={this.props.value}
+                />
+            </FormControl>
+        );
+    }
+}
+
 
 class SearchDebugLevelField extends React.Component {
 
@@ -281,7 +300,8 @@ class SearchForm extends React.Component {
         pages: 1,
         workers: 1,
         debug: 'info',
-        response: ''
+        response: '',
+        proxies: ''
     }
 
     constructor(props) {
@@ -412,12 +432,16 @@ class SearchForm extends React.Component {
                             </Grid>
                             {/*
                             <Grid item>
-                                <SearchTypeField {... this.props value={this.state.type} onChangeCb={ ev => { this.handler('type', ev)}}/>
+                                <SearchTypeField {... this.props} value={this.state.type} onChangeCb={ ev => { this.handler('type', ev)}}/>
                             </Grid>
                             */}
                             <Grid item>
                                 <SearchDebugLevelField {... this.props} value={this.state.debug} onChangeCb={ ev => { this.handler('debug', ev)}}/>
                             </Grid>
+                            <Grid item>
+                                <SearchProxyListField {... this.props} value={this.state.proxies} onChangeCb={ ev => { this.handler('proxies', ev)}}/>
+                            </Grid>
+
                         </Grid>
                     </ExpansionPanelDetails>
                 </ExpansionPanel>

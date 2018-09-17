@@ -1,14 +1,15 @@
 const path = require('path');
+const fs = require('fs');
 let { spawn, exec } = require('child_process');
 
-(function() {
-    var oldSpawn = spawn;
-    function mySpawn() {
-        console.log('spawn called', arguments);
-        return oldSpawn.apply(this, arguments);
-    }
-    spawn = mySpawn;
-})();
+// (function() {
+//     var oldSpawn = spawn;
+//     function mySpawn() {
+//         console.log('spawn called', arguments);
+//         return oldSpawn.apply(this, arguments);
+//     }
+//     spawn = mySpawn;
+// })();
 
 var search = (req, res) => {
 
@@ -17,7 +18,7 @@ var search = (req, res) => {
     // console.log(request);
 
     const command = path.join(process.env.SCRAPER_ROOT || '/home/jbelich/env', '/bin/GoogleScraper');
-    const params = [
+    let params = [
         '-m', request.method || 'http',
         '-s', request.engines || 'google',
         '--keyword', request.search,
@@ -31,12 +32,31 @@ var search = (req, res) => {
     const cwd = path.join('/tmp', request.filename || 'result.json');
     // console.log(cwd);
 
+    let proxy_file = '';
+    if (request.proxies) {
+        proxy_file = cwd + '/proxy.list';
+        params = params.concat(['--proxy-file', proxy_file, '--no-use-own-ip']);
+    }
+
+    // console.log(params, proxy_file, request.proxies);
+
     exec('mkdir ' + cwd).on('error', err => {
         console.log('ERROR: ' + err);
         exec('rm -rf ' + cwd);
 
     }).on('close', code => {
         console.log(`child process mkdir exited with code ${code}`);
+
+        if (proxy_file) {
+            try {
+                fs.writeFileSync(proxy_file, request.proxies + "\n", err => {
+                    if (err) console.log('failed to write proxy file');
+                });
+            } catch (e) {
+                console.log('ERROR: error writing proxy file.');
+                return;
+            }
+        }
 
         const ls = spawn(command, params, {
             cwd: cwd
