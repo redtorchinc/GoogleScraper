@@ -3,6 +3,7 @@ FROM ubuntu:18.04
 LABEL name="jasonscrape" \
       version="0.1"
 
+ENV DEBIAN_FRONTEND=noninteractive
 ENV DISPLAY :0
 
 RUN apt-get update
