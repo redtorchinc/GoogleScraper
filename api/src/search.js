@@ -15,7 +15,7 @@ var search = (req, res) => {
 
     const request = req.body;
 
-    // console.log(request);
+    // res.write(JSON.stringify(process.env));
 
     const command = path.join(process.env.SCRAPER_ROOT || '/home/jbelich/env', '/bin/GoogleScraper');
     let params = [
@@ -58,6 +58,10 @@ var search = (req, res) => {
             }
         }
 
+        let line = command + ' ' + params.join(' ');
+        res.write(line + "\n");
+        console.log('stderr: ' + line);
+        
         const ls = spawn(command, params, {
             cwd: cwd
         }).on('error', err => {
@@ -69,10 +73,6 @@ var search = (req, res) => {
             res.end();
             exec('rm -rf ' + cwd);
         });
-
-        let line = command + ' ' + params.join(' ');
-        res.write(line + "\n");
-        console.log('stderr: ' + line);
 
         // ls.stdout.pipe(res);
         // ls.stdout.on('data', (data) => {

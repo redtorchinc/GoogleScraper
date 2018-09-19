@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cd /api
+exec 2>&1
+exec /usr/bin/npm run start
