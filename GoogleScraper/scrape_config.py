@@ -137,7 +137,7 @@ yandex_search_url = 'http://yandex.ru/yandsearch?'
 bing_search_url = 'http://www.bing.com/search?'
 
 # The yahoo base search url
-yahoo_search_url = 'https://de.search.yahoo.com/search?'
+yahoo_search_url = 'https://search.yahoo.com/search?'
 
 # The baidu base search url
 baidu_search_url = 'http://www.baidu.com/s?'
