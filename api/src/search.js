@@ -29,6 +29,7 @@ var search = (req, res) => {
         '-o', path.join(__dirname, '..', 'files', request.filename || 'result.json'),
         // '--simulate'
     ];
+    const timeout = request.timeout || '360';
     const cwd = path.join('/tmp', request.filename || 'result.json');
     // console.log(cwd);
 
@@ -36,6 +37,10 @@ var search = (req, res) => {
     if (request.proxies) {
         proxy_file = cwd + '/proxy.list';
         params = params.concat(['--proxy-file', proxy_file, '--no-use-own-ip']);
+    }
+
+    if (request.method == 'selenium') {
+        params = params.concat(['--browser-mode', 'headless']);
     }
 
     // console.log(params, proxy_file, request.proxies);
@@ -58,11 +63,14 @@ var search = (req, res) => {
             }
         }
 
-        let line = command + ' ' + params.join(' ');
+        let nparams = ['-k', '10', '--preserve-status', timeout, command];
+
+        let line = '/usr/bin/timeout' + ' ' + nparams.join(' ') + ' ' + params.join(' ');
         res.write(line + "\n");
         console.log('stderr: ' + line);
-        
-        const ls = spawn(command, params, {
+
+        // const ls = spawn(command, params, {
+        const ls = spawn('/usr/bin/timeout', nparams.concat(params), {
             cwd: cwd
         }).on('error', err => {
             console.log("ERROR: " + err);

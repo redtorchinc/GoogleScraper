@@ -208,7 +208,7 @@ class SearchProxyListField extends React.Component {
                 <FormLabel>Proxy List</FormLabel>
                 <TextField
                     id="textarea"
-                    label="format: (https?|socks5) {hostname}:{port} {username}:{password}"
+                    label="format: (https?|socks(4|5)) {hostname}:{port} {username}:{password}"
                     placeholder="Proxy List"
                     multiline
                     className={classes.textField}

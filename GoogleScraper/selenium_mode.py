@@ -333,6 +333,12 @@ class SelScrape(SearchEngineScrape, threading.Thread):
             chrome_options.add_argument('--incognito')
             chrome_options.add_argument('--disable-application-cache')
 
+            chrome_options.add_argument('--single-process')
+            chrome_options.add_argument('--disable-web-security')
+            chrome_options.add_argument('--disable-dev-profile')
+            chrome_options.add_argument('--disable-dev-shm-usage')
+            chrome_options.add_argument('--no-zygote')
+
 
             if self.browser_mode == 'headless':
                 chrome_options.add_argument('headless')
