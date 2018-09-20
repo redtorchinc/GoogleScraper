@@ -37,6 +37,9 @@ var search = (req, res) => {
     if (request.proxies) {
         proxy_file = cwd + '/proxy.list';
         params = params.concat(['--proxy-file', proxy_file, '--no-use-own-ip']);
+        request.proxies = request.proxies.replace(/\s*,\s*/g, '\n');
+
+        // console.log(request.proxies);
     }
 
     if (request.method == 'selenium') {
