@@ -4,6 +4,8 @@ import threading
 import json
 import datetime
 import socket
+import re
+import time
 from urllib.parse import urlencode
 
 import GoogleScraper.socks as socks
@@ -13,6 +15,8 @@ from GoogleScraper.user_agents import random_user_agent
 import logging
 
 logger = logging.getLogger(__name__)
+
+active = {}
 
 headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -316,6 +320,10 @@ class HttpScrape(SearchEngineScrape, threading.Timer):
             # in the actual request, just end the worker.
             self.status = 'Stopping scraping because {}'.format(e)
         else:
+            if(re.search(r'capt?cha', request.url, re.I)):
+                logging.debug('captcha')
+                success = False
+
             if not request.ok:
                 self.handle_request_denied(request.status_code)
                 success = False
@@ -325,12 +333,44 @@ class HttpScrape(SearchEngineScrape, threading.Timer):
         return success
 
     def run(self):
+        global active
+
         super().before_search()
 
         if self.startable:
+
+            sig = self.signature()
+
+            if not sig in active.keys():
+                active[sig] = self.proxy
+
+            while sig in active.keys() and active[sig] != self.proxy and active[sig] != True:
+                # logging.debug('SLEEP');
+                # logging.debug(active)
+                time.sleep(3)
+
+            logger.debug('CONTROL CHECK')
+            logger.debug(active);
+
+            if sig in active.keys() and active[sig] == True:
+                logger.debug('CLEANUP')
+                return
+
+            active[sig] = self.proxy
+
+            logger.debug('ACTIVATE')
+            logger.debug(active)
+            # logger.debug(self.signature())
+
             for self.query, self.pages_per_keyword in self.jobs.items():
 
                 for self.page_number in self.pages_per_keyword:
 
                     if not self.search(rand=True):
+                        logger.debug('FAIL')
+                        if sig in active.keys():
+                            active.pop(sig)
                         self.missed_keywords.add(self.query)
+                    else:
+                        logger.debug('QAPLAH')
+                        active[sig] = True;

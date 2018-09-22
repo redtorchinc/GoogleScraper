@@ -430,15 +430,17 @@ def main(return_results=False, parse_cmd_line=True, config_from_dict=None):
             # here we look for suitable workers
             # for all jobs created.
             for job in scrape_jobs:
-                while True:
-                    worker = workers.get()
-                    workers.put(worker)
-                    if worker.is_suitabe(job):
-                        worker.add_job(job)
-                        break
+                for proxy in proxies:
+                    while True:
+                        worker = workers.get()
+                        workers.put(worker)
+                        if worker.is_suitabe(job) and worker.proxy == proxy:
+                            # logger.debug(worker.proxy)
+                            worker.add_job(job)
+                            # logger.debug(hash([worker.mode, worker.search_engine, job['query']]))
+                            break
 
             threads = []
-
             while not workers.empty():
                 worker = workers.get()
                 thread = worker.get_worker()

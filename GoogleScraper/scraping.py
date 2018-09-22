@@ -255,6 +255,10 @@ class SearchEngineScrape(metaclass=abc.ABCMeta):
 
         self.html = ''
 
+    def signature(self):
+        
+        return hash( ( self.scrape_method, self.scraper_name, frozenset(self.jobs.keys()) ) )
+
     @abc.abstractmethod
     def search(self, *args, **kwargs):
         """Send the search request(s) over the transport."""
@@ -483,7 +487,7 @@ class ScrapeWorkerFactory():
                     proxy=self.proxy,
                     progress_queue=self.progress_queue,
                     captcha_lock=self.captcha_lock,
-                    browser_num=self.browser_num,
+                    browser_num=self.browser_num
                 )
 
             elif self.mode == 'http':
@@ -498,7 +502,7 @@ class ScrapeWorkerFactory():
                     cache_lock=self.cache_lock,
                     db_lock=self.db_lock,
                     proxy=self.proxy,
-                    progress_queue=self.progress_queue,
+                    progress_queue=self.progress_queue
                 )
 
         return None
